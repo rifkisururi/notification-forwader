@@ -1,0 +1,18 @@
+# Node dependencies
+node_modules/
+
+# Cloudflare Wrangler specific
+.wrangler/
+.dev.vars
+
+# Build outputs
+build/
+
+# IDE configurations
+.idea/
+.vscode/
+
+# OS files & logs
+.DS_Store
+Thumbs.db
+*.log
