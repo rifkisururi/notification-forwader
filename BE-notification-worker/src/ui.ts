@@ -6,14 +6,15 @@ export const loginHtml = `<!DOCTYPE html>
   <title>Login — Notification Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <style>
     :root {
       --bg-color: #0b0f19;
       --card-bg: rgba(20, 26, 46, 0.6);
       --card-border: rgba(255, 255, 255, 0.08);
       --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
+      --text-muted: #b0b7c3;
       --primary: #6366f1;
       --primary-hover: #4f46e5;
       --primary-glow: rgba(99, 102, 241, 0.15);
@@ -171,8 +172,39 @@ export const loginHtml = `<!DOCTYPE html>
       box-shadow: 0 0 0 4px var(--primary-glow);
     }
 
+    input::placeholder {
+      color: rgba(176, 183, 195, 0.5);
+    }
+
     input:focus + svg {
       color: var(--primary);
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+
+    .password-wrapper input {
+      padding-right: 44px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+
+    .password-toggle:hover {
+      color: var(--text-main);
     }
 
     .btn {
@@ -242,6 +274,14 @@ export const loginHtml = `<!DOCTYPE html>
         font-size: 20px;
       }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -268,7 +308,7 @@ export const loginHtml = `<!DOCTYPE html>
         <div class="form-group">
           <label for="username">Username</label>
           <div class="input-wrapper">
-            <input type="text" id="username" placeholder="Masukkan username admin" required autocomplete="username">
+            <input type="text" id="username" placeholder="Masukkan username admin" required autocomplete="username" aria-label="Username admin">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
@@ -278,16 +318,22 @@ export const loginHtml = `<!DOCTYPE html>
 
         <div class="form-group">
           <label for="password">Password</label>
-          <div class="input-wrapper">
-            <input type="password" id="password" placeholder="Masukkan password" required autocomplete="current-password">
+          <div class="input-wrapper password-wrapper">
+            <input type="password" id="password" placeholder="Masukkan password" required autocomplete="current-password" aria-label="Password admin">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
+            <button type="button" class="password-toggle" onclick="togglePassword('password', this)" aria-label="Tampilkan password">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
           </div>
         </div>
 
-        <button type="submit" class="btn">
+        <button type="submit" class="btn" aria-label="Login ke dashboard">
           <span id="btnText">Login</span>
           <div id="btnSpinner" class="spinner"></div>
         </button>
@@ -303,6 +349,13 @@ export const loginHtml = `<!DOCTYPE html>
     const errorText = document.getElementById('errorText');
     const btnText = document.getElementById('btnText');
     const btnSpinner = document.getElementById('btnSpinner');
+
+    function togglePassword(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      btn.setAttribute('aria-label', isPassword ? 'Sembunyikan password' : 'Tampilkan password');
+    }
 
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -356,7 +409,8 @@ export const dashboardHtml = `<!DOCTYPE html>
   <title>Dashboard — Notification Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <style>
     :root {
       --bg-color: #080b11;
@@ -364,7 +418,7 @@ export const dashboardHtml = `<!DOCTYPE html>
       --card-border: rgba(255, 255, 255, 0.06);
       --sidebar-bg: #0d121f;
       --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
+      --text-muted: #b0b7c3;
       --primary: #6366f1;
       --primary-hover: #4f46e5;
       --primary-glow: rgba(99, 102, 241, 0.15);
@@ -593,7 +647,7 @@ export const dashboardHtml = `<!DOCTYPE html>
     .stats-total { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
     .stats-today { background: rgba(6, 182, 212, 0.1); color: var(--info); }
     .stats-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-    .stats-failed { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+    .stats-apps { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
 
     /* Dashboard Sections */
     .section {
@@ -807,12 +861,6 @@ export const dashboardHtml = `<!DOCTYPE html>
       margin-top: 4px;
     }
 
-    .btn-sm {
-      padding: 6px 12px;
-      font-size: 12px;
-      border-radius: 8px;
-    }
-
     /* Paging */
     .pagination {
       padding: 20px 24px;
@@ -920,13 +968,6 @@ export const dashboardHtml = `<!DOCTYPE html>
     }
 
     /* Toggle Switch */
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 44px;
-      height: 24px;
-    }
-
     .switch input {
       opacity: 0;
       width: 0;
@@ -946,8 +987,6 @@ export const dashboardHtml = `<!DOCTYPE html>
     .slider:before {
       position: absolute;
       content: "";
-      height: 16px;
-      width: 16px;
       left: 3px;
       bottom: 3px;
       background-color: #fff;
@@ -1052,8 +1091,8 @@ export const dashboardHtml = `<!DOCTYPE html>
       word-break: break-all;
     }
 
-    /* Mobile Responsive Optimizations */
-    @media (max-width: 800px) {
+    /* Mobile Responsive Optimizations — Consolidated Breakpoints */
+    @media (max-width: 1024px) {
       .sidebar {
         transform: translateX(-100%);
       }
@@ -1062,22 +1101,25 @@ export const dashboardHtml = `<!DOCTYPE html>
       }
       .main-content {
         margin-left: 0;
-        padding: 20px;
+        padding: 24px;
       }
       .menu-btn {
         display: flex !important;
       }
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 640px) {
+      .main-content {
+        padding: 16px;
+      }
       .table-responsive {
-        display: none; /* Hide desktop table */
+        display: none;
       }
       #notifCardsContainer {
-        display: flex; /* Show mobile cards list */
+        display: flex;
       }
       .header-title h1 {
-        font-size: 22px;
+        font-size: 20px;
       }
       .header-title p {
         display: none;
@@ -1085,26 +1127,20 @@ export const dashboardHtml = `<!DOCTYPE html>
       .user-info span {
         display: none;
       }
-    }
-
-    @media (max-width: 600px) {
-      .main-content {
-        padding: 16px;
-      }
       .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); /* Auto adaptive columns on mobile */
+        grid-template-columns: 1fr 1fr;
         gap: 12px;
         margin-bottom: 24px;
       }
       .stats-card {
-        padding: 12px;
+        padding: 14px;
         gap: 8px;
       }
       .stats-card-left h3 {
-        font-size: 10px;
+        font-size: 11px;
       }
       .stats-card-left .value {
-        font-size: 20px;
+        font-size: 22px;
         margin-top: 4px;
       }
       .stats-icon {
@@ -1129,11 +1165,9 @@ export const dashboardHtml = `<!DOCTYPE html>
       .card-header {
         padding: 16px;
       }
-    }
-
-    @media (max-width: 480px) {
       .modal {
-        border-radius: 20px;
+        border-radius: 16px;
+        margin: 8px;
       }
       .modal-body {
         padding: 16px;
@@ -1180,9 +1214,221 @@ export const dashboardHtml = `<!DOCTYPE html>
       border-color: var(--card-border) !important;
       color: #fff !important;
     }
+
+    /* Skip Link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--primary);
+      color: #fff;
+      padding: 8px 16px;
+      z-index: 9999;
+      text-decoration: none;
+      font-size: 14px;
+      border-radius: 0 0 8px 0;
+      transition: top 0.2s;
+    }
+    .skip-link:focus {
+      top: 0;
+    }
+
+    /* Placeholder style */
+    input::placeholder, .search-input::placeholder, .form-control::placeholder, textarea::placeholder {
+      color: rgba(176, 183, 195, 0.5);
+    }
+
+    /* Password Toggle */
+    .password-wrapper {
+      position: relative;
+    }
+    .password-wrapper input {
+      padding-right: 44px;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      transition: color 0.2s;
+    }
+    .password-toggle:hover {
+      color: var(--text-main);
+    }
+
+    /* Touch target improvements */
+    .btn-sm {
+      padding: 8px 14px;
+      font-size: 12px;
+      border-radius: 8px;
+      min-height: 36px;
+    }
+    .modal-close {
+      padding: 8px;
+      margin: -8px;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 28px;
+    }
+    .slider:before {
+      height: 20px;
+      width: 20px;
+    }
+    input:checked + .slider:before {
+      transform: translateX(20px);
+    }
+
+    /* Press feedback */
+    .btn-secondary:active:not(:disabled) {
+      transform: scale(0.97);
+      opacity: 0.85;
+    }
+    .btn-sm:active {
+      transform: scale(0.95);
+    }
+    .menu-item:active {
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .content-card {
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .content-card:hover {
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    }
+
+    /* Stats stagger animation */
+    .stats-card {
+      animation: fadeIn 0.4s ease-out both;
+    }
+    .stats-card:nth-child(1) { animation-delay: 0ms; }
+    .stats-card:nth-child(2) { animation-delay: 60ms; }
+    .stats-card:nth-child(3) { animation-delay: 120ms; }
+    .stats-card:nth-child(4) { animation-delay: 180ms; }
+
+    /* Stats "Penyedia App" — purple instead of red */
+    .stats-apps { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+
+    /* Skeleton Loading */
+    .skeleton {
+      background: linear-gradient(90deg,
+        rgba(255,255,255,0.04) 25%,
+        rgba(255,255,255,0.08) 50%,
+        rgba(255,255,255,0.04) 75%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Field error inline */
+    .field-error {
+      color: var(--error);
+      font-size: 12px;
+      margin-top: 4px;
+      display: block;
+    }
+
+    /* Modal exit animation */
+    @keyframes modalFadeOut {
+      from { transform: scale(1); opacity: 1; }
+      to { transform: scale(0.95); opacity: 0; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      z-index: 1000;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      font-family: 'Outfit', sans-serif;
+      animation: slideUp 0.3s ease-out;
+      max-width: 360px;
+    }
+    .toast-success {
+      background: rgba(16,185,129,0.15);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #34d399;
+    }
+    .toast-error {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      color: #f87171;
+    }
+
+    /* Custom Confirm Modal */
+    .confirm-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+    .btn-danger {
+      padding: 10px 20px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px;
+      color: #f87171;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    /* Mobile touch improvements */
+    @media (max-width: 640px) {
+      .btn-sm {
+        min-height: 40px;
+        padding: 8px 16px;
+      }
+      #integrationsListContainer {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Prefers reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body>
+
+  <a href="#mainContent" class="skip-link">Langsung ke konten utama</a>
 
   <!-- Sidebar Backdrop (Mobile Drawer Effect) -->
   <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
@@ -1201,7 +1447,7 @@ export const dashboardHtml = `<!DOCTYPE html>
       </div>
     </div>
     <div class="sidebar-menu">
-      <div class="menu-item active" data-target="dashboardSec" onclick="switchTab(this)">
+      <div class="menu-item active" data-target="dashboardSec" onclick="switchTab(this)" role="button" tabindex="0" aria-label="Dashboard — Overview notifikasi">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="9"></rect>
           <rect x="14" y="3" width="7" height="5"></rect>
@@ -1210,14 +1456,14 @@ export const dashboardHtml = `<!DOCTYPE html>
         </svg>
         <span>Dashboard</span>
       </div>
-      <div class="menu-item" data-target="forwardingSec" onclick="switchTab(this)">
+      <div class="menu-item" data-target="forwardingSec" onclick="switchTab(this)" role="button" tabindex="0" aria-label="Forwarding — Integrasi notifikasi">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="22 2 11 13 22 22"></polyline>
           <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
         </svg>
         <span>Forwarding</span>
       </div>
-      <div class="menu-item" data-target="settingsSec" onclick="switchTab(this)">
+      <div class="menu-item" data-target="settingsSec" onclick="switchTab(this)" role="button" tabindex="0" aria-label="Pengaturan — Konfigurasi sistem">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"></circle>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2 2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -1231,11 +1477,11 @@ export const dashboardHtml = `<!DOCTYPE html>
   </aside>
 
   <!-- Main Content Wrapper -->
-  <main class="main-content">
+  <main class="main-content" id="mainContent">
     
     <!-- Top Header -->
     <div class="header-bar">
-      <div class="menu-btn" onclick="toggleSidebar()">
+      <div class="menu-btn" onclick="toggleSidebar()" role="button" tabindex="0" aria-label="Buka menu navigasi">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -1305,7 +1551,7 @@ export const dashboardHtml = `<!DOCTYPE html>
             <h3>Penyedia App</h3>
             <div id="statApps" class="value">-</div>
           </div>
-          <div class="stats-icon stats-failed">
+          <div class="stats-icon stats-apps">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="2" y1="12" x2="22" y2="12"></line>
@@ -1324,7 +1570,7 @@ export const dashboardHtml = `<!DOCTYPE html>
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
               </svg>
-              <input type="text" id="searchInput" class="search-input" placeholder="Cari berdasarkan judul, pesan..." oninput="handleSearch()">
+              <input type="text" id="searchInput" class="search-input" placeholder="Cari berdasarkan judul, pesan..." oninput="debounceSearch()">
             </div>
             
             <select id="appFilter" class="select-input" onchange="handleAppFilter()">
@@ -1347,7 +1593,29 @@ export const dashboardHtml = `<!DOCTYPE html>
             </thead>
             <tbody id="notifTableBody">
               <tr>
-                <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">Memuat data...</td>
+                <td colspan="6" style="padding: 16px 24px;">
+                  <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">
+                    <div class="skeleton" style="width:60px;height:24px;"></div>
+                    <div class="skeleton" style="flex:1;height:16px;"></div>
+                    <div class="skeleton" style="width:80px;height:16px;"></div>
+                    <div class="skeleton" style="width:100px;height:16px;"></div>
+                    <div class="skeleton" style="width:60px;height:28px;"></div>
+                  </div>
+                  <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">
+                    <div class="skeleton" style="width:70px;height:24px;"></div>
+                    <div class="skeleton" style="flex:1;height:16px;"></div>
+                    <div class="skeleton" style="width:90px;height:16px;"></div>
+                    <div class="skeleton" style="width:100px;height:16px;"></div>
+                    <div class="skeleton" style="width:60px;height:28px;"></div>
+                  </div>
+                  <div style="display:flex;gap:12px;align-items:center;">
+                    <div class="skeleton" style="width:55px;height:24px;"></div>
+                    <div class="skeleton" style="flex:1;height:16px;"></div>
+                    <div class="skeleton" style="width:85px;height:16px;"></div>
+                    <div class="skeleton" style="width:100px;height:16px;"></div>
+                    <div class="skeleton" style="width:60px;height:28px;"></div>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -1355,7 +1623,38 @@ export const dashboardHtml = `<!DOCTYPE html>
 
         <!-- Mobile Cards View -->
         <div id="notifCardsContainer">
-          <div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;">Memuat data...</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="background:rgba(255,255,255,0.02);border:1px solid var(--card-border);border-radius:16px;padding:16px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                <div class="skeleton" style="width:60px;height:20px;"></div>
+                <div class="skeleton" style="width:80px;height:14px;"></div>
+              </div>
+              <div class="skeleton" style="width:70%;height:16px;margin-bottom:6px;"></div>
+              <div class="skeleton" style="width:90%;height:14px;margin-bottom:12px;"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.04);padding-top:10px;">
+                <div class="skeleton" style="width:80px;height:18px;"></div>
+                <div style="display:flex;gap:8px;">
+                  <div class="skeleton" style="width:50px;height:28px;"></div>
+                  <div class="skeleton" style="width:60px;height:28px;"></div>
+                </div>
+              </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid var(--card-border);border-radius:16px;padding:16px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                <div class="skeleton" style="width:70px;height:20px;"></div>
+                <div class="skeleton" style="width:80px;height:14px;"></div>
+              </div>
+              <div class="skeleton" style="width:60%;height:16px;margin-bottom:6px;"></div>
+              <div class="skeleton" style="width:80%;height:14px;margin-bottom:12px;"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(255,255,255,0.04);padding-top:10px;">
+                <div class="skeleton" style="width:90px;height:18px;"></div>
+                <div style="display:flex;gap:8px;">
+                  <div class="skeleton" style="width:50px;height:28px;"></div>
+                  <div class="skeleton" style="width:60px;height:28px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="pagination">
@@ -1386,8 +1685,27 @@ export const dashboardHtml = `<!DOCTYPE html>
 
       <!-- Integrations Grid / List -->
       <div id="integrationsListContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px;">
-        <div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: var(--text-muted); background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; backdrop-filter: blur(10px);">
-          Memuat daftar integrasi...
+        <div style="grid-column: 1 / -1; padding: 20px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; backdrop-filter: blur(10px); display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+          <div style="background:rgba(255,255,255,0.02);border:1px solid var(--card-border);border-radius:16px;padding:20px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:14px;">
+              <div style="display:flex;gap:10px;align-items:center;">
+                <div class="skeleton" style="width:36px;height:36px;border-radius:10px;"></div>
+                <div><div class="skeleton" style="width:80px;height:12px;margin-bottom:6px;"></div><div class="skeleton" style="width:120px;height:16px;"></div></div>
+              </div>
+              <div class="skeleton" style="width:44px;height:24px;border-radius:12px;"></div>
+            </div>
+            <div class="skeleton" style="width:60%;height:12px;"></div>
+          </div>
+          <div style="background:rgba(255,255,255,0.02);border:1px solid var(--card-border);border-radius:16px;padding:20px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:14px;">
+              <div style="display:flex;gap:10px;align-items:center;">
+                <div class="skeleton" style="width:36px;height:36px;border-radius:10px;"></div>
+                <div><div class="skeleton" style="width:70px;height:12px;margin-bottom:6px;"></div><div class="skeleton" style="width:100px;height:16px;"></div></div>
+              </div>
+              <div class="skeleton" style="width:44px;height:24px;border-radius:12px;"></div>
+            </div>
+            <div class="skeleton" style="width:50%;height:12px;"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1434,17 +1752,41 @@ export const dashboardHtml = `<!DOCTYPE html>
             
             <div class="form-group">
               <label for="oldPassword">Password Saat Ini</label>
-              <input type="password" id="oldPassword" class="form-control" placeholder="Masukkan password sekarang" required>
+              <div class="password-wrapper">
+                <input type="password" id="oldPassword" class="form-control" placeholder="Masukkan password sekarang" required>
+                <button type="button" class="password-toggle" onclick="togglePassword('oldPassword', this)" aria-label="Tampilkan password">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div class="form-group">
               <label for="newPassword">Password Baru</label>
-              <input type="password" id="newPassword" class="form-control" placeholder="Masukkan password baru" required>
+              <div class="password-wrapper">
+                <input type="password" id="newPassword" class="form-control" placeholder="Masukkan password baru" required>
+                <button type="button" class="password-toggle" onclick="togglePassword('newPassword', this)" aria-label="Tampilkan password">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div class="form-group">
               <label for="confirmPassword">Konfirmasi Password Baru</label>
-              <input type="password" id="confirmPassword" class="form-control" placeholder="Ulangi password baru" required>
+              <div class="password-wrapper">
+                <input type="password" id="confirmPassword" class="form-control" placeholder="Ulangi password baru" required>
+                <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword', this)" aria-label="Tampilkan password">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <button type="submit" class="btn-primary">Simpan Kredensial Baru</button>
@@ -1486,10 +1828,10 @@ export const dashboardHtml = `<!DOCTYPE html>
 
   <!-- Detail Modal -->
   <div class="modal-backdrop" id="modalBackdrop" onclick="closeModal()">
-    <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal" onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Detail Notifikasi">
       <div class="modal-header">
         <h3>Detail Notifikasi</h3>
-        <button class="modal-close" onclick="closeModal()">
+        <button class="modal-close" onclick="closeModal()" aria-label="Tutup modal detail">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1504,10 +1846,10 @@ export const dashboardHtml = `<!DOCTYPE html>
 
   <!-- Add/Edit Integration Modal -->
   <div class="modal-backdrop" id="integrationModalBackdrop" onclick="closeIntegrationModal()">
-    <div class="modal" onclick="event.stopPropagation()" style="max-width: 550px;">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width: 550px;" role="dialog" aria-modal="true" aria-label="Form integrasi">
       <div class="modal-header">
         <h3 id="integrationModalTitle">Tambah Integrasi</h3>
-        <button class="modal-close" onclick="closeIntegrationModal()">
+        <button class="modal-close" onclick="closeIntegrationModal()" aria-label="Tutup modal integrasi">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1612,6 +1954,28 @@ export const dashboardHtml = `<!DOCTYPE html>
     </div>
   </div>
 
+  <!-- Custom Confirm Modal -->
+  <div class="modal-backdrop" id="confirmBackdrop">
+    <div class="modal" onclick="event.stopPropagation()" role="alertdialog" aria-modal="true" aria-labelledby="confirmMessage" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3>Konfirmasi</h3>
+        <button class="modal-close" onclick="closeConfirm()" aria-label="Tutup konfirmasi">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmMessage" style="font-size: 14px; color: var(--text-main); line-height: 1.6;"></p>
+        <div class="confirm-actions">
+          <button type="button" class="btn-secondary" id="confirmNo" style="padding: 10px 20px;">Batal</button>
+          <button type="button" class="btn-danger" id="confirmYes">Ya, Lanjutkan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     let limit = 15;
     let offset = 0;
@@ -1620,6 +1984,105 @@ export const dashboardHtml = `<!DOCTYPE html>
     let searchQuery = '';
     let availableApps = new Set();
     let allNotifications = [];
+
+    // === Utility Functions ===
+
+    // Password toggle
+    function togglePassword(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      btn.setAttribute('aria-label', isPassword ? 'Sembunyikan password' : 'Tampilkan password');
+    }
+
+    // Toast notification
+    function showToast(message, type) {
+      type = type || 'success';
+      const toast = document.createElement('div');
+      toast.className = 'toast toast-' + type;
+      toast.textContent = message;
+      toast.setAttribute('role', 'status');
+      toast.setAttribute('aria-live', 'polite');
+      document.body.appendChild(toast);
+      setTimeout(function() {
+        toast.style.animation = 'fadeOut 0.3s ease-in forwards';
+        setTimeout(function() { toast.remove(); }, 300);
+      }, 2500);
+    }
+
+    // Custom confirm
+    let confirmResolve = null;
+    function showConfirm(message, onConfirm) {
+      var backdrop = document.getElementById('confirmBackdrop');
+      document.getElementById('confirmMessage').textContent = message;
+      backdrop.style.display = 'flex';
+      document.getElementById('confirmYes').onclick = function() {
+        backdrop.style.display = 'none';
+        if (onConfirm) onConfirm();
+      };
+      document.getElementById('confirmNo').onclick = function() {
+        backdrop.style.display = 'none';
+      };
+    }
+    function closeConfirm() {
+      document.getElementById('confirmBackdrop').style.display = 'none';
+    }
+
+    // Escape key handler for all modals
+    let lastFocusedElement = null;
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var detailModal = document.getElementById('modalBackdrop');
+        var intModal = document.getElementById('integrationModalBackdrop');
+        var confirmModal = document.getElementById('confirmBackdrop');
+        if (detailModal.style.display === 'flex') { closeModal(); }
+        else if (intModal.style.display === 'flex') { closeIntegrationModal(); }
+        else if (confirmModal.style.display === 'flex') { closeConfirm(); }
+      }
+    });
+
+    // Focus trap helper
+    function trapFocus(modalElement) {
+      var focusable = modalElement.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (focusable.length === 0) return;
+      var first = focusable[0];
+      var last = focusable[focusable.length - 1];
+      first.focus();
+      modalElement.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+          if (e.shiftKey && document.activeElement === first) {
+            last.focus(); e.preventDefault();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            first.focus(); e.preventDefault();
+          }
+        }
+      });
+    }
+
+    // Field error helpers
+    function showFieldError(fieldId, message) {
+      var field = document.getElementById(fieldId);
+      if (!field) return;
+      clearFieldError(fieldId);
+      field.style.borderColor = 'var(--error)';
+      var errorEl = document.createElement('div');
+      errorEl.className = 'field-error';
+      errorEl.textContent = message;
+      field.parentElement.appendChild(errorEl);
+    }
+    function clearFieldError(fieldId) {
+      var field = document.getElementById(fieldId);
+      if (!field) return;
+      field.style.borderColor = '';
+      var existing = field.parentElement.querySelector('.field-error');
+      if (existing) existing.remove();
+    }
+    function clearFieldErrors(formId) {
+      var form = document.getElementById(formId);
+      if (!form) return;
+      form.querySelectorAll('.field-error').forEach(function(el) { el.remove(); });
+      form.querySelectorAll('input, select, textarea').forEach(function(el) { el.style.borderColor = ''; });
+    }
 
     // Init load
     window.addEventListener('DOMContentLoaded', () => {
@@ -1812,6 +2275,12 @@ export const dashboardHtml = `<!DOCTYPE html>
       }
     }
 
+    let searchTimeout = null;
+    function debounceSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(function() { handleSearch(); }, 300);
+    }
+
     function handleSearch() {
       searchQuery = document.getElementById('searchInput').value;
       offset = 0;
@@ -1891,13 +2360,15 @@ export const dashboardHtml = `<!DOCTYPE html>
           </div>
         </div>
       \`;
-      
-      document.getElementById('modalBackdrop').style.display = 'flex';
+
+      lastFocusedElement = document.activeElement;
+      var backdrop = document.getElementById('modalBackdrop');
+      backdrop.style.display = 'flex';
+      setTimeout(function() { trapFocus(backdrop.querySelector('.modal')); }, 100);
     }
 
     async function forwardNotification(id) {
-      if (!confirm('Apakah Anda yakin ingin meneruskan notifikasi ini ke semua forwarding rule yang aktif?')) return;
-      
+      showConfirm('Apakah Anda yakin ingin meneruskan notifikasi ini ke semua forwarding rule yang aktif?', async function() {
       const alertEl = document.getElementById('dashboardAlert');
       alertEl.style.display = 'none';
       alertEl.className = 'status-alert';
@@ -1925,10 +2396,20 @@ export const dashboardHtml = `<!DOCTYPE html>
         alertEl.className = 'status-alert error';
         alertEl.style.display = 'block';
       }
+      }); // end showConfirm
     }
 
     function closeModal() {
-      document.getElementById('modalBackdrop').style.display = 'none';
+      var backdrop = document.getElementById('modalBackdrop');
+      var modal = backdrop.querySelector('.modal');
+      modal.style.animation = 'modalFadeOut 0.2s ease-in forwards';
+      backdrop.style.animation = 'fadeOut 0.2s ease-in forwards';
+      setTimeout(function() {
+        backdrop.style.display = 'none';
+        backdrop.style.animation = '';
+        modal.style.animation = '';
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+      }, 200);
     }
 
     function switchTab(el) {
@@ -1952,13 +2433,13 @@ export const dashboardHtml = `<!DOCTYPE html>
       }
       
       // Close mobile menu on click
-      if (window.innerWidth <= 800) {
+      if (window.innerWidth <= 1024) {
         toggleSidebar();
       }
     }
 
     function toggleSidebar() {
-      const isMobile = window.innerWidth <= 800;
+      const isMobile = window.innerWidth <= 1024;
       if (isMobile) {
         const sidebar = document.getElementById('sidebar');
         const backdrop = document.getElementById('sidebarBackdrop');
@@ -2129,11 +2610,14 @@ export const dashboardHtml = `<!DOCTYPE html>
       const alertEl = document.getElementById('integrationModalAlert');
       alertEl.style.display = 'none';
       alertEl.className = 'status-alert';
-      
+
       document.getElementById('intType').value = 'telegram';
       handleIntegrationTypeChange();
-      
-      document.getElementById('integrationModalBackdrop').style.display = 'flex';
+
+      lastFocusedElement = document.activeElement;
+      var backdrop = document.getElementById('integrationModalBackdrop');
+      backdrop.style.display = 'flex';
+      setTimeout(function() { trapFocus(backdrop.querySelector('.modal')); }, 100);
     }
 
     function openEditIntegrationModal(rule) {
@@ -2170,31 +2654,54 @@ export const dashboardHtml = `<!DOCTYPE html>
       }
       
       handleIntegrationTypeChange();
-      document.getElementById('integrationModalBackdrop').style.display = 'flex';
+      lastFocusedElement = document.activeElement;
+      var backdrop = document.getElementById('integrationModalBackdrop');
+      backdrop.style.display = 'flex';
+      setTimeout(function() { trapFocus(backdrop.querySelector('.modal')); }, 100);
     }
 
     function closeIntegrationModal() {
-      document.getElementById('integrationModalBackdrop').style.display = 'none';
+      var backdrop = document.getElementById('integrationModalBackdrop');
+      var modal = backdrop.querySelector('.modal');
+      modal.style.animation = 'modalFadeOut 0.2s ease-in forwards';
+      backdrop.style.animation = 'fadeOut 0.2s ease-in forwards';
+      setTimeout(function() {
+        backdrop.style.display = 'none';
+        backdrop.style.animation = '';
+        modal.style.animation = '';
+        if (lastFocusedElement) { lastFocusedElement.focus(); lastFocusedElement = null; }
+      }, 200);
     }
 
     function getFormConfig() {
       const type = document.getElementById('intType').value;
       const config = {};
-      
+
       if (type === 'telegram') {
         config.bot_token = document.getElementById('intTgBotToken').value.trim();
         config.chat_id = document.getElementById('intTgChatId').value.trim();
-        if (!config.bot_token || !config.chat_id) {
-          throw new Error('Bot Token dan Chat ID wajib diisi');
+        if (!config.bot_token) {
+          showFieldError('intTgBotToken', 'Bot Token wajib diisi');
+          document.getElementById('intTgBotToken').focus();
+          throw new Error('Bot Token wajib diisi');
+        }
+        if (!config.chat_id) {
+          showFieldError('intTgChatId', 'Chat ID wajib diisi');
+          document.getElementById('intTgChatId').focus();
+          throw new Error('Chat ID wajib diisi');
         }
       } else if (type === 'discord') {
         config.webhook_url = document.getElementById('intDiscordWebhookUrl').value.trim();
         if (!config.webhook_url) {
+          showFieldError('intDiscordWebhookUrl', 'Discord Webhook URL wajib diisi');
+          document.getElementById('intDiscordWebhookUrl').focus();
           throw new Error('Discord Webhook URL wajib diisi');
         }
       } else if (type === 'custom') {
         config.custom_url = document.getElementById('intCustomUrl').value.trim();
         if (!config.custom_url) {
+          showFieldError('intCustomUrl', 'Webhook Target URL wajib diisi');
+          document.getElementById('intCustomUrl').focus();
           throw new Error('Webhook Target URL wajib diisi');
         }
         const headersStr = document.getElementById('intCustomHeaders').value.trim();
@@ -2202,6 +2709,7 @@ export const dashboardHtml = `<!DOCTYPE html>
           try {
             config.custom_headers = JSON.parse(headersStr);
           } catch(e) {
+            showFieldError('intCustomHeaders', 'Format Custom Headers tidak valid (Harus JSON valid)');
             throw new Error('Format Custom Headers tidak valid (Harus JSON valid)');
           }
         }
@@ -2209,8 +2717,20 @@ export const dashboardHtml = `<!DOCTYPE html>
         config.access_token = document.getElementById('intWaAccessToken').value.trim();
         config.phone_number_id = document.getElementById('intWaPhoneNumberId').value.trim();
         config.recipient_phone = document.getElementById('intWaRecipientPhone').value.trim();
-        if (!config.access_token || !config.phone_number_id || !config.recipient_phone) {
-          throw new Error('Token Akses, ID Nomor Telepon, dan Nomor Penerima wajib diisi');
+        if (!config.access_token) {
+          showFieldError('intWaAccessToken', 'Access Token wajib diisi');
+          document.getElementById('intWaAccessToken').focus();
+          throw new Error('Access Token wajib diisi');
+        }
+        if (!config.phone_number_id) {
+          showFieldError('intWaPhoneNumberId', 'Phone Number ID wajib diisi');
+          document.getElementById('intWaPhoneNumberId').focus();
+          throw new Error('Phone Number ID wajib diisi');
+        }
+        if (!config.recipient_phone) {
+          showFieldError('intWaRecipientPhone', 'Nomor HP Penerima wajib diisi');
+          document.getElementById('intWaRecipientPhone').focus();
+          throw new Error('Nomor HP Penerima wajib diisi');
         }
       }
       return config;
@@ -2218,10 +2738,11 @@ export const dashboardHtml = `<!DOCTYPE html>
 
     async function saveIntegration(event) {
       event.preventDefault();
-      
+
       const alertEl = document.getElementById('integrationModalAlert');
       alertEl.style.display = 'none';
       alertEl.className = 'status-alert';
+      clearFieldErrors('integrationForm');
       
       const id = document.getElementById('intId').value;
       const name = document.getElementById('intName').value.trim();
@@ -2303,8 +2824,7 @@ export const dashboardHtml = `<!DOCTYPE html>
     }
 
     async function deleteIntegration(id) {
-      if (!confirm('Apakah Anda yakin ingin menghapus integrasi ini?')) return;
-      
+      showConfirm('Apakah Anda yakin ingin menghapus integrasi ini? Tindakan ini tidak dapat dibatalkan.', async function() {
       const mainAlert = document.getElementById('forwardingAlert');
       mainAlert.style.display = 'none';
       
@@ -2331,6 +2851,7 @@ export const dashboardHtml = `<!DOCTYPE html>
         mainAlert.className = 'status-alert error';
         mainAlert.style.display = 'block';
       }
+      }); // end showConfirm
     }
 
     async function testIntegrationById(id) {
@@ -2440,6 +2961,7 @@ export const dashboardHtml = `<!DOCTYPE html>
       const alertEl = document.getElementById('settingsAlert');
       alertEl.className = 'status-alert';
       alertEl.style.display = 'none';
+      clearFieldErrors('settingsForm');
 
       const username = document.getElementById('newUsername').value;
       const oldPassword = document.getElementById('oldPassword').value;
@@ -2447,8 +2969,8 @@ export const dashboardHtml = `<!DOCTYPE html>
       const confirmPassword = document.getElementById('confirmPassword').value;
 
       if (newPassword !== confirmPassword) {
-        alertEl.textContent = 'Konfirmasi password baru tidak cocok!';
-        alertEl.classList.add('error');
+        showFieldError('confirmPassword', 'Konfirmasi password baru tidak cocok!');
+        document.getElementById('confirmPassword').focus();
         return;
       }
 
@@ -2618,12 +3140,13 @@ void sendNotification() async {
     function copySampleCode() {
       const previewEl = document.getElementById('codePreview');
       if (!previewEl) return;
-      
+
       navigator.clipboard.writeText(previewEl.textContent)
         .then(() => {
-          alert('Kode berhasil disalin ke clipboard!');
+          showToast('Kode berhasil disalin ke clipboard!', 'success');
         })
         .catch(err => {
+          showToast('Gagal menyalin kode', 'error');
           console.error('Gagal menyalin kode', err);
         });
     }
