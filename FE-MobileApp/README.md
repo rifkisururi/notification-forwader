@@ -11,7 +11,7 @@ Aplikasi Flutter Android premium yang dirancang untuk mendengarkan (intercept) n
 3. **Queueing Strategy**: Menyimpan notifikasi yang masuk ketika engine/antarmuka Flutter sedang tidak aktif dalam antrean Kotlin, lalu mengirimkannya kembali (*flush*) secara otomatis setelah Flutter aktif.
 4. **Deduplikasi Cerdas**: Menggunakan *compound key* (`packageName:notifId:text`) untuk mencegah pengiriman ulang notifikasi yang identik ke API.
 5. **Regex Amount Parser**: Secara otomatis mengekstrak nilai nominal finansial (misalnya: `Rp150.000` atau `IDR 50.000`) dari isi teks notifikasi untuk kebutuhan pemantauan transaksi cepat.
-6. **Network Handler Kuat**: Dilengkapi dengan batas waktu respons (timeout) 10 detik dan mekanisme coba ulang otomatis (retry) sebanyak 1 kali dengan penundaan 5 detik jika terjadi gangguan jaringan.
+6. **Configurable & Manual Retry**: Dilengkapi batas waktu respons 10 detik, setelan jumlah percobaan ulang (Max Retries) serta jeda waktu (Delay) yang dapat disesuaikan di drawer pengaturan, dan tombol "Retry Sending" untuk mengirim ulang notifikasi yang gagal secara manual.
 7. **Connection Tester**: Memiliki fitur pengujian endpoint menggunakan dummy payload secara langsung dari panel pengaturan samping (*settings drawer*).
 
 ---

@@ -8,6 +8,8 @@ class Preferences {
   static const String _keyApiToken = 'api_token';
   static const String _keyMonitoredPackages = 'monitored_packages';
   static const String _keyNotificationLogs = 'notification_logs';
+  static const String _keyMaxRetries = 'max_retries';
+  static const String _keyRetryDelay = 'retry_delay';
 
   static SharedPreferences? _prefs;
 
@@ -47,6 +49,24 @@ class Preferences {
 
   static Future<void> setApiToken(String value) async {
     await prefs.setString(_keyApiToken, value.trim());
+  }
+
+  // Max Retries
+  static int get maxRetries {
+    return prefs.getInt(_keyMaxRetries) ?? 3;
+  }
+
+  static Future<void> setMaxRetries(int value) async {
+    await prefs.setInt(_keyMaxRetries, value);
+  }
+
+  // Retry Delay (seconds)
+  static int get retryDelay {
+    return prefs.getInt(_keyRetryDelay) ?? 5;
+  }
+
+  static Future<void> setRetryDelay(int value) async {
+    await prefs.setInt(_keyRetryDelay, value);
   }
 
   // Monitored packages

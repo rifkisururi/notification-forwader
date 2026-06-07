@@ -131,29 +131,48 @@ class NotificationService {
     }
   }
 
-  /// Handles forwarding logic with one retry after 5 seconds
+  /// Handles forwarding logic with configurable retries and delays
   static Future<void> _forwardWithRetry(NotificationLogEntry entry) async {
-    final success = await ApiService.forward(entry.payload);
+    final maxAttempts = Preferences.maxRetries;
+    final delaySeconds = Preferences.retryDelay;
+    
+    int attempt = 0;
+    bool success = false;
+    
+    while (attempt <= maxAttempts && !success) {
+      if (attempt > 0) {
+        debugPrint('Forward failed for notification ${entry.payload.notifId}. Retrying attempt $attempt/$maxAttempts in $delaySeconds seconds...');
+        await Future.delayed(Duration(seconds: delaySeconds));
+      }
+      
+      success = await ApiService.forward(entry.payload);
+      if (success) {
+        break;
+      }
+      
+      attempt++;
+    }
     
     if (success) {
       entry.status = NotificationStatus.sent;
-      await Preferences.updateNotificationLog(entry);
-      _notifyListeners();
+      entry.error = null;
     } else {
-      debugPrint('Forward failed for notification ${entry.payload.notifId}. Retrying in 5 seconds...');
-      
-      // Wait for 5 seconds and try once more
-      await Future.delayed(const Duration(seconds: 5));
-      
-      final retrySuccess = await ApiService.forward(entry.payload);
-      if (retrySuccess) {
-        entry.status = NotificationStatus.sent;
-      } else {
-        entry.status = NotificationStatus.failed;
-      }
-      
-      await Preferences.updateNotificationLog(entry);
-      _notifyListeners();
+      entry.status = NotificationStatus.failed;
+      entry.error = 'Failed after $maxAttempts retry attempts';
     }
+    
+    await Preferences.updateNotificationLog(entry);
+    _notifyListeners();
+  }
+
+  /// Manually retry forwarding a failed notification log entry
+  static Future<void> retryForward(NotificationLogEntry entry) async {
+    entry.status = NotificationStatus.sending;
+    entry.error = null;
+    await Preferences.updateNotificationLog(entry);
+    _notifyListeners();
+    
+    // Asynchronously trigger forwarding to avoid blocking the caller
+    _forwardWithRetry(entry);
   }
 }

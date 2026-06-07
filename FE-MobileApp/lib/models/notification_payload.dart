@@ -49,7 +49,7 @@ class NotificationLogEntry {
   final NotificationPayload payload;
   NotificationStatus status;
   final String? nominal;
-  final String? error;
+  String? error;
 
   NotificationLogEntry({
     required this.id,

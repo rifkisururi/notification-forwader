@@ -24,6 +24,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final TextEditingController _urlController = TextEditingController();
   final TextEditingController _endpointController = TextEditingController();
   final TextEditingController _tokenController = TextEditingController();
+  final TextEditingController _maxRetriesController = TextEditingController();
+  final TextEditingController _retryDelayController = TextEditingController();
 
   bool _isTestingConnection = false;
   String _testMessage = '';
@@ -38,6 +40,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _urlController.text = Preferences.apiBaseUrl;
     _endpointController.text = Preferences.apiEndpoint;
     _tokenController.text = Preferences.apiToken;
+    _maxRetriesController.text = Preferences.maxRetries.toString();
+    _retryDelayController.text = Preferences.retryDelay.toString();
 
     _logs = Preferences.notificationLogs;
 
@@ -61,6 +65,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _urlController.dispose();
     _endpointController.dispose();
     _tokenController.dispose();
+    _maxRetriesController.dispose();
+    _retryDelayController.dispose();
     super.dispose();
   }
 
@@ -133,6 +139,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     await Preferences.setApiBaseUrl(_urlController.text);
     await Preferences.setApiEndpoint(_endpointController.text);
     await Preferences.setApiToken(_tokenController.text);
+    
+    final maxRet = int.tryParse(_maxRetriesController.text) ?? 3;
+    final delayRet = int.tryParse(_retryDelayController.text) ?? 5;
+    await Preferences.setMaxRetries(maxRet);
+    await Preferences.setRetryDelay(delayRet);
     
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -582,15 +593,45 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   if (entry.status == NotificationStatus.failed)
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
-                      child: Row(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.error_outline, color: Colors.redAccent, size: 14),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              'Forwarding failed. Ensure network connects and API credentials are correct.',
-                              style: TextStyle(color: Colors.red.shade300, fontSize: 11, fontStyle: FontStyle.italic),
+                          Row(
+                            children: [
+                              const Icon(Icons.error_outline, color: Colors.redAccent, size: 14),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  entry.error ?? 'Forwarding failed. Ensure network connects and API credentials are correct.',
+                                  style: TextStyle(color: Colors.red.shade300, fontSize: 11, fontStyle: FontStyle.italic),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFEF4444).withOpacity(0.15),
+                              foregroundColor: Colors.redAccent,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(color: Colors.redAccent.withOpacity(0.2)),
+                              ),
                             ),
+                            onPressed: () {
+                              NotificationService.retryForward(entry);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Retrying notification forwarding...'),
+                                  behavior: SnackBarBehavior.floating,
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.refresh, size: 14),
+                            label: const Text('Retry Sending', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
@@ -667,6 +708,29 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 hint: 'your-bearer-token',
                 icon: Icons.vpn_key,
                 isPassword: true,
+              ),
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextInput(
+                      controller: _maxRetriesController,
+                      label: 'Max Retries',
+                      hint: '3',
+                      icon: Icons.repeat,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildTextInput(
+                      controller: _retryDelayController,
+                      label: 'Delay (seconds)',
+                      hint: '5',
+                      icon: Icons.timer_outlined,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
 
