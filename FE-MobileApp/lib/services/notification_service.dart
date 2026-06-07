@@ -87,6 +87,13 @@ class NotificationService {
   static Future<void> _handleIncomingNotification(String jsonStr) async {
     try {
       final Map<String, dynamic> jsonMap = jsonDecode(jsonStr);
+      
+      // Inject device_name from local Preferences
+      final devName = Preferences.deviceName;
+      if (devName.isNotEmpty) {
+        jsonMap['device_name'] = devName;
+      }
+      
       final payload = NotificationPayload.fromJson(jsonMap);
 
       // Create compound deduplication key: package_name:notif_id

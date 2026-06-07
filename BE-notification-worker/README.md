@@ -38,6 +38,7 @@ Receive and record notification payload.
     "big_text": "Pembayaran QRIS sebesar Rp150.000 berhasil diterima",
     "nominal_raw": "Rp150.000",
     "nominal": 150000,
+    "device_name": "HP Kasir 1",
     "received_at": "2025-06-05T07:30:00Z",
     "notif_id": 12345
   }
@@ -68,6 +69,7 @@ Retrieve paginated notification history.
         "title": "Pembayaran Diterima",
         "text": "QRIS Rp150.000 berhasil",
         "nominal": 150000,
+        "device_name": "HP Kasir 1",
         "received_at": "2025-06-05T07:30:00Z",
         "created_at": "2025-06-05T07:30:05Z"
       }
@@ -159,6 +161,7 @@ curl -X POST https://notification-worker.<subdomain>.workers.dev/notify \
     "title": "Pembayaran Diterima",
     "text": "QRIS Rp150.000 berhasil",
     "nominal": 150000,
+    "device_name": "HP Kasir 1",
     "received_at": "2025-06-05T07:30:00Z"
   }'
 ```

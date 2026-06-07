@@ -59,13 +59,14 @@ Secara default, Android membatasi akses aplikasi lain untuk membaca notifikasi s
 4. Temukan **"Notification Forwarder Service"** (atau **"notif"**) dan aktifkan tombol toggle menjadi **ON / Diizinkan**.
 5. Kembali ke aplikasi, banner akan berubah menjadi hijau (**"Notification Access: Enabled & Active"**).
 
-### 2. Konfigurasi Endpoint REST API & Kredensial
+### 2. Konfigurasi Nama Perangkat, Endpoint REST API & Kredensial
 1. Buka drawer panel pengaturan di sisi kiri dengan mengusap (*swipe*) dari tepi kiri layar ke kanan atau ketuk ikon menu di pojok kiri atas.
-2. Masukkan **API Base URL** Anda (contoh: `https://api.domain.com`).
-3. Masukkan **Endpoint** target (bawaannya adalah `/api/notification`).
-4. (Opsional) Masukkan **Bearer Token** jika API Anda memerlukan autentikasi keamanan.
-5. Ketuk **"Test Connection"** untuk menguji koneksi. Aplikasi akan mengirimkan payload dummy dan menampilkan status HTTP (sukses/gagal).
-6. Ketuk **"Save Settings"** untuk menyimpan setelan tersebut.
+2. Masukkan **Device Name** (contoh: `HP Kasir 1`, `HP Admin`) untuk melacak asal pengirim notifikasi di dasbor.
+3. Masukkan **API Base URL** Anda (contoh: `https://api.domain.com`).
+4. Masukkan **Endpoint** target (bawaannya adalah `/api/notification`).
+5. (Opsional) Masukkan **Bearer Token** jika API Anda memerlukan autentikasi keamanan.
+6. Ketuk **"Test Connection"** untuk menguji koneksi. Aplikasi akan mengirimkan payload dummy dan menampilkan status HTTP (sukses/gagal).
+7. Ketuk **"Save Settings"** untuk menyimpan setelan tersebut.
 
 ### 3. Nonaktifkan Optimasi Baterai (Mencegah Aplikasi Mati Sendiri)
 Android memiliki manajemen baterai yang agresif (*Doze mode*) yang dapat menonaktifkan service latar belakang jika perangkat dalam keadaan diam (idle). Agar aplikasi dapat memantau secara terus-menerus:

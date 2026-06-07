@@ -6,6 +6,7 @@ class NotificationPayload {
   final String bigText;
   final String receivedAt;
   final int notifId;
+  final String? deviceName;
 
   NotificationPayload({
     required this.sourceApp,
@@ -15,6 +16,7 @@ class NotificationPayload {
     required this.bigText,
     required this.receivedAt,
     required this.notifId,
+    this.deviceName,
   });
 
   factory NotificationPayload.fromJson(Map<String, dynamic> json) {
@@ -26,6 +28,7 @@ class NotificationPayload {
       bigText: json['big_text'] ?? '',
       receivedAt: json['received_at'] ?? '',
       notifId: json['notif_id'] ?? 0,
+      deviceName: json['device_name'],
     );
   }
 
@@ -38,6 +41,7 @@ class NotificationPayload {
       'big_text': bigText,
       'received_at': receivedAt,
       'notif_id': notifId,
+      if (deviceName != null) 'device_name': deviceName,
     };
   }
 }

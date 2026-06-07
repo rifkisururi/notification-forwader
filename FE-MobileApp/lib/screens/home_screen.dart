@@ -26,6 +26,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final TextEditingController _tokenController = TextEditingController();
   final TextEditingController _maxRetriesController = TextEditingController();
   final TextEditingController _retryDelayController = TextEditingController();
+  final TextEditingController _deviceNameController = TextEditingController();
 
   bool _isTestingConnection = false;
   String _testMessage = '';
@@ -42,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _tokenController.text = Preferences.apiToken;
     _maxRetriesController.text = Preferences.maxRetries.toString();
     _retryDelayController.text = Preferences.retryDelay.toString();
+    _deviceNameController.text = Preferences.deviceName;
 
     _logs = Preferences.notificationLogs;
 
@@ -67,6 +69,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _tokenController.dispose();
     _maxRetriesController.dispose();
     _retryDelayController.dispose();
+    _deviceNameController.dispose();
     super.dispose();
   }
 
@@ -139,6 +142,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     await Preferences.setApiBaseUrl(_urlController.text);
     await Preferences.setApiEndpoint(_endpointController.text);
     await Preferences.setApiToken(_tokenController.text);
+    await Preferences.setDeviceName(_deviceNameController.text);
     
     final maxRet = int.tryParse(_maxRetriesController.text) ?? 3;
     final delayRet = int.tryParse(_retryDelayController.text) ?? 5;
@@ -682,6 +686,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
               ),
               const SizedBox(height: 20),
+              
+              // Device Name Input
+              _buildTextInput(
+                controller: _deviceNameController,
+                label: 'Device Name',
+                hint: 'e.g. HP Kasir 1',
+                icon: Icons.phone_android,
+              ),
+              const SizedBox(height: 16),
               
               // Base URL Input
               _buildTextInput(

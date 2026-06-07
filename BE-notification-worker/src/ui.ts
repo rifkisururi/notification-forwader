@@ -1584,6 +1584,7 @@ export const dashboardHtml = `<!DOCTYPE html>
             <thead>
               <tr>
                 <th>Aplikasi</th>
+                <th>Perangkat</th>
                 <th>Judul & Teks</th>
                 <th>Nominal</th>
                 <th>Diterima (Device)</th>
@@ -1593,7 +1594,7 @@ export const dashboardHtml = `<!DOCTYPE html>
             </thead>
             <tbody id="notifTableBody">
               <tr>
-                <td colspan="6" style="padding: 16px 24px;">
+                <td colspan="7" style="padding: 16px 24px;">
                   <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">
                     <div class="skeleton" style="width:60px;height:24px;"></div>
                     <div class="skeleton" style="flex:1;height:16px;"></div>
@@ -2169,7 +2170,7 @@ export const dashboardHtml = `<!DOCTYPE html>
       cardContainer.innerHTML = '';
       
       if (notifications.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">Tidak ada data notifikasi</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">Tidak ada data notifikasi</td></tr>';
         cardContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 14px;">Tidak ada data notifikasi</div>';
         return;
       }
@@ -2186,10 +2187,12 @@ export const dashboardHtml = `<!DOCTYPE html>
         const titleEscaped = escapeHtml(n.title || '');
         const textEscaped = escapeHtml(n.text || '');
         const appLabel = escapeHtml(n.source_app_label || n.source_app || '-');
+        const deviceName = escapeHtml(n.device_name || '-');
         
         const tr = document.createElement('tr');
         tr.innerHTML = \`
           <td><span class="badge badge-info" style="font-size: 11px;">\${appLabel}</span></td>
+          <td><span style="font-weight: 500; color: #fff;">\${deviceName}</span></td>
           <td>
             <div style="font-weight: 600; color: #fff;">\${titleEscaped}</div>
             <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">\${textEscaped}</div>
@@ -2210,7 +2213,10 @@ export const dashboardHtml = `<!DOCTYPE html>
         card.style.padding = '16px';
         card.innerHTML = \`
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-            <span class="badge badge-info" style="font-size: 10px;">\${appLabel}</span>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <span class="badge badge-info" style="font-size: 10px;">\${appLabel}</span>
+              \${n.device_name ? \`<span class="badge" style="font-size: 10px; background: rgba(255,255,255,0.1); color: #ccc;">\${escapeHtml(n.device_name)}</span>\` : ''}
+            </div>
             <span style="font-size: 12px; color: var(--text-muted);">\${dateServer}</span>
           </div>
           <div style="font-weight: 600; color: #fff; margin-bottom: 4px;">\${titleEscaped}</div>
@@ -2354,9 +2360,15 @@ export const dashboardHtml = `<!DOCTYPE html>
             </div>
           </div>
           
-          <div>
-            <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 2px;">ID Notifikasi HP</div>
-            <div style="font-size: 13px; color: #fff; font-family: monospace;">\${notif.notif_id || '-'}</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 2px;">Perangkat</div>
+              <div style="font-size: 13px; color: #fff; font-weight: 500;">\${escapeHtml(notif.device_name || '-')}</div>
+            </div>
+            <div>
+              <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 2px;">ID Notifikasi HP</div>
+              <div style="font-size: 13px; color: #fff; font-family: monospace;">\${notif.notif_id || '-'}</div>
+            </div>
           </div>
         </div>
       \`;

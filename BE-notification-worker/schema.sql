@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS notifications (
   nominal_raw TEXT,
   nominal     INTEGER,                    -- in rupiah, nullable
   notif_id    INTEGER,
+  device_name TEXT,                       -- custom user device identifier
   received_at TEXT,                       -- ISO8601 from device
   created_at  TEXT NOT NULL               -- ISO8601 server time
 );

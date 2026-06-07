@@ -16,6 +16,7 @@ interface NotificationPayload {
   nominal_raw?: string;
   nominal?: number;
   notif_id?: number;
+  device_name?: string;
   received_at?: string;
 }
 
@@ -141,7 +142,9 @@ async function testForwardingRule(type: string, config: string, payload: any) {
     if (!botToken || !chatId) {
       throw new Error("Bot Token dan Chat ID wajib diisi");
     }
+    const deviceLine = payload.device_name ? `🏷️ *Perangkat:* ${payload.device_name}\n` : "";
     const text = `🔔 *Tes Notifikasi Pembayaran*\n\n` +
+                 deviceLine +
                  `📱 *Aplikasi:* ${appLabel} (${payload.source_app})\n` +
                  `👤 *Judul:* ${payload.title}\n` +
                  `💬 *Pesan:* ${payload.text}\n` +
@@ -172,6 +175,7 @@ async function testForwardingRule(type: string, config: string, payload: any) {
           title: "🔔 Tes Notifikasi Pembayaran",
           color: 6516977,
           fields: [
+            ...(payload.device_name ? [{ name: "Perangkat", value: payload.device_name, inline: true }] : []),
             { name: "Aplikasi", value: `${appLabel} (${payload.source_app})`, inline: true },
             { name: "Nominal", value: nominalText, inline: true },
             { name: "Judul", value: payload.title, inline: false },
@@ -223,7 +227,9 @@ async function testForwardingRule(type: string, config: string, payload: any) {
     if (!accessToken || !phoneNumberId || !recipientPhone) {
       throw new Error("Token Akses, ID Nomor Telepon, dan Nomor Penerima wajib diisi");
     }
+    const deviceLine = payload.device_name ? `*Perangkat:* ${payload.device_name}\n` : "";
     const text = `🔔 *Tes Notifikasi Pembayaran*\n\n` +
+                 deviceLine +
                  `*Aplikasi:* ${appLabel} (${payload.source_app})\n` +
                  `*Judul:* ${payload.title}\n` +
                  `*Pesan:* ${payload.text}\n` +
@@ -299,7 +305,9 @@ async function performForwarding(payload: any, db: D1Database) {
         const botToken = configObj.bot_token;
         const chatId = configObj.chat_id;
         if (botToken && chatId) {
+          const deviceLine = payload.device_name ? `🏷️ *Perangkat:* ${payload.device_name}\n` : "";
           const text = `🔔 *Notifikasi Pembayaran Baru*\n\n` +
+                       deviceLine +
                        `📱 *Aplikasi:* ${appLabel} (${payload.source_app})\n` +
                        `👤 *Judul:* ${payload.title || "-"}\n` +
                        `💬 *Pesan:* ${payload.text || "-"}\n` +
@@ -327,6 +335,7 @@ async function performForwarding(payload: any, db: D1Database) {
                 title: "🔔 Notifikasi Pembayaran Baru",
                 color: 6516977, // Indigo #6366F1
                 fields: [
+                  ...(payload.device_name ? [{ name: "Perangkat", value: payload.device_name, inline: true }] : []),
                   { name: "Aplikasi", value: `${appLabel} (${payload.source_app})`, inline: true },
                   { name: "Nominal", value: nominalText, inline: true },
                   { name: "Judul", value: payload.title || "-", inline: false },
@@ -374,7 +383,9 @@ async function performForwarding(payload: any, db: D1Database) {
         const phoneNumberId = configObj.phone_number_id;
         const recipientPhone = configObj.recipient_phone;
         if (accessToken && phoneNumberId && recipientPhone) {
+          const deviceLine = payload.device_name ? `*Perangkat:* ${payload.device_name}\n` : "";
           const text = `🔔 *Notifikasi Pembayaran Baru*\n\n` +
+                       deviceLine +
                        `*Aplikasi:* ${appLabel} (${payload.source_app})\n` +
                        `*Judul:* ${payload.title || "-"}\n` +
                        `*Pesan:* ${payload.text || "-"}\n` +
@@ -443,6 +454,7 @@ async function handleNotify(request: Request, env: Env, ctx: ExecutionContext): 
     nominal_raw,
     nominal,
     notif_id,
+    device_name,
     received_at,
   } = payload as NotificationPayload;
 
@@ -489,8 +501,8 @@ async function handleNotify(request: Request, env: Env, ctx: ExecutionContext): 
   try {
     await env.DB.prepare(
       `INSERT INTO notifications (
-        id, source_app, source_app_label, title, text, big_text, nominal_raw, nominal, notif_id, received_at, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        id, source_app, source_app_label, title, text, big_text, nominal_raw, nominal, notif_id, device_name, received_at, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       id,
       source_app,
@@ -501,6 +513,7 @@ async function handleNotify(request: Request, env: Env, ctx: ExecutionContext): 
       (typeof nominal_raw === "string") ? nominal_raw : null,
       parsedNominal,
       parsedNotifId,
+      (typeof device_name === "string" && device_name.trim() !== "") ? device_name.trim() : null,
       finalReceivedAt,
       serverTime
     ).run();
@@ -519,6 +532,7 @@ async function handleNotify(request: Request, env: Env, ctx: ExecutionContext): 
     nominal_raw,
     nominal: parsedNominal,
     notif_id: parsedNotifId,
+    device_name: (typeof device_name === "string" && device_name.trim() !== "") ? device_name.trim() : undefined,
     received_at: finalReceivedAt,
     created_at: serverTime,
   };
@@ -554,7 +568,7 @@ async function handleList(request: Request, env: Env): Promise<Response> {
   }
 
   let countQuery = "SELECT COUNT(*) as total FROM notifications";
-  let dataQuery = "SELECT id, source_app, source_app_label, title, text, nominal, received_at, created_at FROM notifications";
+  let dataQuery = "SELECT id, source_app, source_app_label, title, text, nominal, device_name, received_at, created_at FROM notifications";
   let whereClause = "";
   const params: any[] = [];
 
@@ -1033,7 +1047,7 @@ async function handleApiAdminNotifications(request: Request, env: Env): Promise<
   }
 
   let countQuery = "SELECT COUNT(*) as total FROM notifications";
-  let dataQuery = "SELECT id, source_app, source_app_label, title, text, big_text, nominal_raw, nominal, notif_id, received_at, created_at FROM notifications";
+  let dataQuery = "SELECT id, source_app, source_app_label, title, text, big_text, nominal_raw, nominal, notif_id, device_name, received_at, created_at FROM notifications";
   
   const whereConditions: string[] = [];
   const params: any[] = [];
@@ -1101,7 +1115,7 @@ async function handleApiAdminNotificationsForward(request: Request, env: Env): P
 
   try {
     const notif = await env.DB.prepare(
-      "SELECT id, source_app, source_app_label, title, text, big_text, nominal_raw, nominal, notif_id, received_at, created_at FROM notifications WHERE id = ?"
+      "SELECT id, source_app, source_app_label, title, text, big_text, nominal_raw, nominal, notif_id, device_name, received_at, created_at FROM notifications WHERE id = ?"
     ).bind(id).first<any>();
 
     if (!notif) {

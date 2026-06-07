@@ -10,6 +10,7 @@ class Preferences {
   static const String _keyNotificationLogs = 'notification_logs';
   static const String _keyMaxRetries = 'max_retries';
   static const String _keyRetryDelay = 'retry_delay';
+  static const String _keyDeviceName = 'device_name';
 
   static SharedPreferences? _prefs;
 
@@ -49,6 +50,15 @@ class Preferences {
 
   static Future<void> setApiToken(String value) async {
     await prefs.setString(_keyApiToken, value.trim());
+  }
+
+  // Device Name
+  static String get deviceName {
+    return prefs.getString(_keyDeviceName) ?? '';
+  }
+
+  static Future<void> setDeviceName(String value) async {
+    await prefs.setString(_keyDeviceName, value.trim());
   }
 
   // Max Retries
