@@ -1,0 +1,61 @@
+name: Build and Release Android APK
+
+on:
+  push:
+    tags:
+      - 'v*' # Memicu alur kerja ketika tag git diawali dengan huruf 'v' (contoh v1.0.0)
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install Dependencies
+        run: flutter pub get
+        working-directory: FE-MobileApp
+
+      - name: Decode Keystore and Key Properties
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > FE-MobileApp/android/app/upload-keystore.jks
+          echo "${{ secrets.KEY_PROPERTIES }}" > FE-MobileApp/android/key.properties
+
+      - name: Build Release APK
+        run: flutter build apk --release
+        working-directory: FE-MobileApp
+
+      - name: Create GitHub Release and Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          files: FE-MobileApp/build/app/outputs/flutter-apk/app-release.apk
+          name: Release ${{ github.ref_name }}
+          body: |
+            ## Rilis Notif Forwarder Aplikasi Seluler ${{ github.ref_name }}
+            
+            Unduh berkas `app-release.apk` di bawah ini dan pasang pada ponsel Android Anda.
+            
+            ### Fitur Utama & Perbaikan:
+            * Pemantauan notifikasi aplikasi terpilih secara real-time.
+            * Fitur pengiriman ulang (retry) otomatis & manual untuk pengiriman log gagal.
+            * Pendeteksi otomatis nominal mutasi keuangan (Rp/IDR).
+            * Pengaturan parameter retry (maksimal pencarian dan durasi delay) langsung di dalam drawer setelan.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
