@@ -1,4 +1,4 @@
-package com.example.notif
+package com.pedagangpulsa.notifforwader
 
 import android.content.Context
 import android.service.notification.NotificationListenerService
@@ -14,7 +14,7 @@ import java.util.TimeZone
 
 class NotifListenerService : NotificationListenerService() {
     private val TAG = "NotifListenerService"
-    private val CHANNEL = "com.example.notif/notifications"
+    private val CHANNEL = "com.pedagangpulsa.notifforwader/notifications"
 
     companion object {
         // Queue to store notifications when the Flutter engine is not available
@@ -27,7 +27,7 @@ class NotifListenerService : NotificationListenerService() {
             isFlushing = true
             
             val messenger = engine.dartExecutor.binaryMessenger
-            val channel = MethodChannel(messenger, "com.example.notif/notifications")
+            val channel = MethodChannel(messenger, "com.pedagangpulsa.notifforwader/notifications")
             
             val mainHandler = android.os.Handler(context.mainLooper)
             mainHandler.post {

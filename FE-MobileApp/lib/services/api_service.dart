@@ -223,7 +223,7 @@ class ApiService {
     final fullUrl = '$cleanBaseUrl$cleanEndpoint';
 
     final dummyPayload = NotificationPayload(
-      sourceApp: 'com.example.notif',
+      sourceApp: 'com.pedagangpulsa.notifforwader',
       sourceAppLabel: 'NotifForwarderTest',
       title: 'Connection Test',
       text: 'Testing REST API connection',

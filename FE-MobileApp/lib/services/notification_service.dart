@@ -8,7 +8,7 @@ import '../utils/preferences.dart';
 import 'api_service.dart';
 
 class NotificationService {
-  static const MethodChannel _channel = MethodChannel('com.example.notif/notifications');
+  static const MethodChannel _channel = MethodChannel('com.pedagangpulsa.notifforwader/notifications');
   
   static final List<VoidCallback> _listeners = [];
   

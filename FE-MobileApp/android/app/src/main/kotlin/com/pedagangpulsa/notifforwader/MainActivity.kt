@@ -1,4 +1,4 @@
-package com.example.notif
+package com.pedagangpulsa.notifforwader
 
 import android.content.Context
 import android.content.Intent
@@ -10,7 +10,7 @@ import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.example.notif/notifications"
+    private val CHANNEL = "com.pedagangpulsa.notifforwader/notifications"
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
