@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/notification_payload.dart';
+import '../models/forward_target.dart';
 
 class Preferences {
   static const String _keyApiBaseUrl = 'api_base_url';
@@ -129,5 +130,41 @@ class Preferences {
 
   static Future<void> clearNotificationLogs() async {
     await prefs.remove(_keyNotificationLogs);
+  }
+
+  static const String _keyForwardTargets = 'forward_targets';
+
+  static List<ForwardTarget> get forwardTargets {
+    final list = prefs.getStringList(_keyForwardTargets) ?? [];
+    if (list.isEmpty) {
+      final dbUrl = apiBaseUrl;
+      if (dbUrl.isNotEmpty) {
+        final defaultTarget = ForwardTarget(
+          id: 'default_api',
+          name: 'Default REST API',
+          type: ForwardTargetType.api,
+          isEnabled: true,
+          config: {
+            'baseUrl': dbUrl,
+            'endpoint': apiEndpoint,
+            'token': apiToken,
+          },
+        );
+        return [defaultTarget];
+      }
+      return [];
+    }
+    return list.map((item) {
+      try {
+        return ForwardTarget.fromJson(jsonDecode(item));
+      } catch (_) {
+        return null;
+      }
+    }).whereType<ForwardTarget>().toList();
+  }
+
+  static Future<void> saveForwardTargets(List<ForwardTarget> targets) async {
+    final list = targets.map((t) => jsonEncode(t.toJson())).toList();
+    await prefs.setStringList(_keyForwardTargets, list);
   }
 }

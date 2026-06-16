@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:installed_apps/installed_apps.dart';
+import '../models/forward_target.dart';
 import '../models/notification_payload.dart';
-import '../services/api_service.dart';
 import '../services/notification_service.dart';
 import '../utils/preferences.dart';
 import 'app_selector_screen.dart';
+import 'forward_targets_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,26 +22,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final Map<String, Uint8List?> _appIconCache = {};
 
   // Controller states for the settings drawer
-  final TextEditingController _urlController = TextEditingController();
-  final TextEditingController _endpointController = TextEditingController();
-  final TextEditingController _tokenController = TextEditingController();
   final TextEditingController _maxRetriesController = TextEditingController();
   final TextEditingController _retryDelayController = TextEditingController();
   final TextEditingController _deviceNameController = TextEditingController();
-
-  bool _isTestingConnection = false;
-  String _testMessage = '';
-  bool? _testSuccess;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     
-    // Load controllers from saved preferences
-    _urlController.text = Preferences.apiBaseUrl;
-    _endpointController.text = Preferences.apiEndpoint;
-    _tokenController.text = Preferences.apiToken;
     _maxRetriesController.text = Preferences.maxRetries.toString();
     _retryDelayController.text = Preferences.retryDelay.toString();
     _deviceNameController.text = Preferences.deviceName;
@@ -64,9 +54,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     NotificationService.removeListener(_onNotificationsChanged);
-    _urlController.dispose();
-    _endpointController.dispose();
-    _tokenController.dispose();
     _maxRetriesController.dispose();
     _retryDelayController.dispose();
     _deviceNameController.dispose();
@@ -116,32 +103,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _testApiConnection() async {
-    setState(() {
-      _isTestingConnection = true;
-      _testMessage = 'Connecting...';
-      _testSuccess = null;
-    });
 
-    final res = await ApiService.testConnection(
-      _urlController.text,
-      _endpointController.text,
-      _tokenController.text,
-    );
-
-    if (mounted) {
-      setState(() {
-        _isTestingConnection = false;
-        _testSuccess = res['success'];
-        _testMessage = res['message'];
-      });
-    }
-  }
 
   Future<void> _saveSettings() async {
-    await Preferences.setApiBaseUrl(_urlController.text);
-    await Preferences.setApiEndpoint(_endpointController.text);
-    await Preferences.setApiToken(_tokenController.text);
     await Preferences.setDeviceName(_deviceNameController.text);
     
     final maxRet = int.tryParse(_maxRetriesController.text) ?? 3;
@@ -338,8 +302,19 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildConfigurationSummary(Color cardBg) {
-    final baseUrl = Preferences.apiBaseUrl;
-    final hasUrl = baseUrl.isNotEmpty;
+    final targets = Preferences.forwardTargets;
+    final activeTargets = targets.where((t) => t.isEnabled).toList();
+    final hasActive = activeTargets.isNotEmpty;
+
+    String summaryText;
+    if (targets.isEmpty) {
+      summaryText = 'No channels configured';
+    } else if (activeTargets.isEmpty) {
+      summaryText = 'All channels disabled (${targets.length} total)';
+    } else {
+      final types = activeTargets.map((t) => t.type.toString().split('.').last.toUpperCase()).toSet().join(', ');
+      summaryText = '$types (${activeTargets.length} active)';
+    }
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
@@ -354,12 +329,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: hasUrl ? const Color(0xFF6366F1).withOpacity(0.15) : Colors.redAccent.withOpacity(0.15),
+              color: hasActive ? const Color(0xFF6366F1).withOpacity(0.15) : Colors.redAccent.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
             child: Icon(
-              hasUrl ? Icons.link : Icons.link_off,
-              color: hasUrl ? const Color(0xFF6366F1) : Colors.redAccent,
+              hasActive ? Icons.forward_to_inbox : Icons.link_off,
+              color: hasActive ? const Color(0xFF6366F1) : Colors.redAccent,
               size: 20,
             ),
           ),
@@ -369,14 +344,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'API Forwarding Address',
+                  'Forwarding Channels',
                   style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  hasUrl ? '$baseUrl${Preferences.apiEndpoint}' : 'Configure REST API in drawer settings',
+                  summaryText,
                   style: TextStyle(
-                    color: hasUrl ? Colors.white : Colors.white54,
+                    color: hasActive ? Colors.white : Colors.white54,
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
@@ -394,13 +369,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Swipe from left edge or tap the menu to configure.'),
-                  behavior: SnackBarBehavior.floating,
-                ),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ForwardTargetsScreen()),
               );
+              if (mounted) {
+                setState(() {});
+              }
             },
             child: const Text('Setup', style: TextStyle(fontSize: 12)),
           ),
@@ -594,34 +570,123 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   _buildDetailRow('Received UTC', payload.receivedAt),
                   if (payload.bigText.isNotEmpty)
                     _buildDetailRow('Big Text', payload.bigText),
-                  if (entry.status == NotificationStatus.failed)
+                  
+                  const SizedBox(height: 12),
+                  const Text(
+                    'DELIVERY CHANNELS',
+                    style: TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                  ),
+                  const SizedBox(height: 8),
+                  if (entry.targetStatuses.isEmpty)
+                    const Text(
+                      'No active channels for this log.',
+                      style: TextStyle(color: Colors.white30, fontSize: 11, fontStyle: FontStyle.italic),
+                    )
+                  else
+                    ...entry.targetStatuses.entries.map((statusEntry) {
+                      final targetId = statusEntry.key;
+                      final status = statusEntry.value;
+                      final err = entry.targetErrors[targetId];
+
+                      final targetObj = Preferences.forwardTargets.firstWhere(
+                        (t) => t.id == targetId,
+                        orElse: () => ForwardTarget(
+                          id: targetId,
+                          name: targetId == 'default_api' ? 'Default REST API' : 'Channel ($targetId)',
+                          type: ForwardTargetType.api,
+                          config: {},
+                        ),
+                      );
+
+                      IconData targetIcon;
+                      Color targetColor;
+                      switch (targetObj.type) {
+                        case ForwardTargetType.api:
+                          targetIcon = Icons.api;
+                          targetColor = const Color(0xFF6366F1);
+                          break;
+                        case ForwardTargetType.telegram:
+                          targetIcon = Icons.send;
+                          targetColor = const Color(0xFF0088CC);
+                          break;
+                        case ForwardTargetType.whatsapp:
+                          targetIcon = Icons.chat;
+                          targetColor = const Color(0xFF25D366);
+                          break;
+                      }
+
+                      Color statusColor;
+                      IconData statusIcon;
+                      if (status == 'sent') {
+                        statusColor = const Color(0xFF10B981);
+                        statusIcon = Icons.check_circle_outline;
+                      } else if (status == 'sending') {
+                        statusColor = const Color(0xFFF59E0B);
+                        statusIcon = Icons.hourglass_empty;
+                      } else {
+                        statusColor = const Color(0xFFEF4444);
+                        statusIcon = Icons.error_outline;
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.02),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.white.withOpacity(0.04)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(targetIcon, color: targetColor, size: 14),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      targetObj.name,
+                                      style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  Icon(statusIcon, color: statusColor, size: 12),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    status.toUpperCase(),
+                                    style: TextStyle(color: statusColor, fontSize: 9, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                              if (err != null) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  err,
+                                  style: TextStyle(color: Colors.red.shade300, fontSize: 11, fontStyle: FontStyle.italic),
+                                ),
+                              ]
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+
+                  if (entry.status == NotificationStatus.failed || entry.error != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.error_outline, color: Colors.redAccent, size: 14),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  entry.error ?? 'Forwarding failed. Ensure network connects and API credentials are correct.',
-                                  style: TextStyle(color: Colors.red.shade300, fontSize: 11, fontStyle: FontStyle.italic),
-                                ),
-                              ),
-                            ],
-                          ),
                           const SizedBox(height: 8),
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFEF4444).withOpacity(0.15),
-                              foregroundColor: Colors.redAccent,
+                              backgroundColor: const Color(0xFF6366F1).withOpacity(0.15),
+                              foregroundColor: const Color(0xFF6366F1),
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: BorderSide(color: Colors.redAccent.withOpacity(0.2)),
+                                side: BorderSide(color: const Color(0xFF6366F1).withOpacity(0.2)),
                               ),
                             ),
                             onPressed: () {
@@ -635,7 +700,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                               );
                             },
                             icon: const Icon(Icons.refresh, size: 14),
-                            label: const Text('Retry Sending', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                            label: const Text('Retry Forwarding', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
@@ -673,7 +738,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'API Settings',
+                'Settings',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -682,45 +747,65 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
               const SizedBox(height: 6),
               Text(
-                'Configure your REST endpoint to forward incoming notifications.',
+                'Configure global settings and forwarding channels.',
                 style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               
+              // Forwarding Channels Button
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context); // Close drawer
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ForwardTargetsScreen()),
+                  ).then((_) {
+                    if (mounted) setState(() {});
+                  });
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF6366F1).withOpacity(0.3)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.forward_to_inbox, color: Color(0xFF6366F1)),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Forwarding Channels',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'Configure API, Telegram, WhatsApp',
+                              style: TextStyle(color: Colors.white30, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(Icons.chevron_right, color: Colors.white30),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Divider(color: Colors.white10),
+              const SizedBox(height: 16),
+
               // Device Name Input
               _buildTextInput(
                 controller: _deviceNameController,
                 label: 'Device Name',
                 hint: 'e.g. HP Kasir 1',
                 icon: Icons.phone_android,
-              ),
-              const SizedBox(height: 16),
-              
-              // Base URL Input
-              _buildTextInput(
-                controller: _urlController,
-                label: 'API Base URL',
-                hint: 'https://api.yourdomain.com',
-                icon: Icons.dns,
-              ),
-              const SizedBox(height: 16),
-              
-              // Endpoint Input
-              _buildTextInput(
-                controller: _endpointController,
-                label: 'Endpoint',
-                hint: '/api/notification',
-                icon: Icons.route,
-              ),
-              const SizedBox(height: 16),
-              
-              // Bearer Token Input
-              _buildTextInput(
-                controller: _tokenController,
-                label: 'Bearer Token (Optional)',
-                hint: 'your-bearer-token',
-                icon: Icons.vpn_key,
-                isPassword: true,
               ),
               const SizedBox(height: 16),
 
@@ -745,90 +830,21 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
-              // Test Connection Status Message
-              if (_testMessage.isNotEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: _testSuccess == true
-                        ? const Color(0xFF10B981).withOpacity(0.15)
-                        : _testSuccess == false
-                            ? Colors.redAccent.withOpacity(0.15)
-                            : Colors.grey.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(10),
+              // Save Settings Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6366F1),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        _testSuccess == true
-                            ? Icons.check_circle_outline
-                            : _testSuccess == false
-                                ? Icons.error_outline
-                                : Icons.hourglass_empty,
-                        color: _testSuccess == true
-                            ? const Color(0xFF10B981)
-                            : _testSuccess == false
-                                ? Colors.redAccent
-                                : Colors.grey,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _testMessage,
-                          style: TextStyle(
-                            color: _testSuccess == true
-                                ? const Color(0xFF10B981)
-                                : _testSuccess == false
-                                    ? Colors.redAccent
-                                    : Colors.white,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  onPressed: _saveSettings,
+                  child: const Text('Save Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                 ),
-
-              // Action buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.white.withOpacity(0.2)),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: _isTestingConnection ? null : _testApiConnection,
-                      child: _isTestingConnection
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation(Colors.white)),
-                            )
-                          : const Text('Test Connection', style: TextStyle(fontSize: 13)),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6366F1),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: _saveSettings,
-                      child: const Text('Save Settings', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                    ),
-                  ),
-                ],
               ),
               const Spacer(),
               const Divider(color: Colors.white10),

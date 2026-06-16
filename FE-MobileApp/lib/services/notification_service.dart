@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/notification_payload.dart';
+import '../models/forward_target.dart';
 import '../utils/preferences.dart';
 import 'api_service.dart';
 
@@ -138,36 +139,106 @@ class NotificationService {
     }
   }
 
-  /// Handles forwarding logic with configurable retries and delays
-  static Future<void> _forwardWithRetry(NotificationLogEntry entry) async {
-    final maxAttempts = Preferences.maxRetries;
-    final delaySeconds = Preferences.retryDelay;
-    
+  static Future<bool> _forwardToTargetWithRetry(
+    NotificationLogEntry entry,
+    ForwardTarget target,
+    int maxAttempts,
+    int delaySeconds,
+  ) async {
     int attempt = 0;
     bool success = false;
-    
+    ForwardResult? lastResult;
+
+    // Initialize status for this target
+    entry.targetStatuses[target.id] = 'sending';
+    entry.targetErrors.remove(target.id);
+    await Preferences.updateNotificationLog(entry);
+    _notifyListeners();
+
     while (attempt <= maxAttempts && !success) {
       if (attempt > 0) {
-        debugPrint('Forward failed for notification ${entry.payload.notifId}. Retrying attempt $attempt/$maxAttempts in $delaySeconds seconds...');
+        debugPrint('Forward to target ${target.name} failed. Retrying attempt $attempt/$maxAttempts in $delaySeconds seconds...');
         await Future.delayed(Duration(seconds: delaySeconds));
       }
-      
-      success = await ApiService.forward(entry.payload);
+
+      lastResult = await ApiService.forwardToTarget(entry.payload, target);
+      success = lastResult.success;
       if (success) {
         break;
       }
-      
+
       attempt++;
+      if (attempt <= maxAttempts) {
+        entry.targetErrors[target.id] =
+            'Forward to target ${target.name} failed. Retrying attempt $attempt/$maxAttempts in $delaySeconds seconds...\n'
+            'URL: ${lastResult.url}\n'
+            'Response: ${lastResult.response}';
+        await Preferences.updateNotificationLog(entry);
+        _notifyListeners();
+      }
     }
-    
+
     if (success) {
+      entry.targetStatuses[target.id] = 'sent';
+      entry.targetErrors.remove(target.id);
+    } else {
+      entry.targetStatuses[target.id] = 'failed';
+      final details = lastResult != null
+          ? '\nURL: ${lastResult.url}\nResponse: ${lastResult.response}'
+          : '';
+      entry.targetErrors[target.id] = 'Failed after $maxAttempts retry attempts$details';
+    }
+
+    await Preferences.updateNotificationLog(entry);
+    _notifyListeners();
+    return success;
+  }
+
+  /// Handles forwarding logic with configurable retries and delays
+  static Future<void> _forwardWithRetry(NotificationLogEntry entry) async {
+    final activeTargets = Preferences.forwardTargets.where((t) => t.isEnabled).toList();
+
+    if (activeTargets.isEmpty) {
+      entry.status = NotificationStatus.failed;
+      entry.error = 'No active forwarding targets configured';
+      await Preferences.updateNotificationLog(entry);
+      _notifyListeners();
+      return;
+    }
+
+    final maxAttempts = Preferences.maxRetries;
+    final delaySeconds = Preferences.retryDelay;
+
+    // Initialize targets map
+    entry.targetStatuses = Map<String, String>.from(entry.targetStatuses);
+    entry.targetErrors = Map<String, String>.from(entry.targetErrors);
+    for (final target in activeTargets) {
+      entry.targetStatuses[target.id] = 'sending';
+    }
+    entry.status = NotificationStatus.sending;
+    await Preferences.updateNotificationLog(entry);
+    _notifyListeners();
+
+    // Run all targets in parallel
+    final results = await Future.wait(
+      activeTargets.map((target) => _forwardToTargetWithRetry(entry, target, maxAttempts, delaySeconds)),
+    );
+
+    // Aggregate overall status
+    final allSuccess = results.every((success) => success);
+    final anySuccess = results.any((success) => success);
+
+    if (allSuccess) {
       entry.status = NotificationStatus.sent;
       entry.error = null;
+    } else if (anySuccess) {
+      entry.status = NotificationStatus.sent;
+      entry.error = 'Partially failed. Check details.';
     } else {
       entry.status = NotificationStatus.failed;
-      entry.error = 'Failed after $maxAttempts retry attempts';
+      entry.error = 'All targets failed to forward';
     }
-    
+
     await Preferences.updateNotificationLog(entry);
     _notifyListeners();
   }

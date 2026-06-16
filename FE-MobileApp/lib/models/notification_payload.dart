@@ -54,6 +54,8 @@ class NotificationLogEntry {
   NotificationStatus status;
   final String? nominal;
   String? error;
+  Map<String, String> targetStatuses; // targetId -> 'sending'/'sent'/'failed'
+  Map<String, String> targetErrors;   // targetId -> errorMessage
 
   NotificationLogEntry({
     required this.id,
@@ -61,6 +63,8 @@ class NotificationLogEntry {
     required this.status,
     this.nominal,
     this.error,
+    this.targetStatuses = const {},
+    this.targetErrors = const {},
   });
 
   // Extract nominal from text/bigText (e.g. Rp150.000, Rp 150.000, Rp. 150.000)
@@ -85,6 +89,8 @@ class NotificationLogEntry {
       ),
       nominal: json['nominal'],
       error: json['error'],
+      targetStatuses: Map<String, String>.from(json['targetStatuses'] ?? {}),
+      targetErrors: Map<String, String>.from(json['targetErrors'] ?? {}),
     );
   }
 
@@ -95,6 +101,8 @@ class NotificationLogEntry {
       'status': status.toString(),
       'nominal': nominal,
       'error': error,
+      'targetStatuses': targetStatuses,
+      'targetErrors': targetErrors,
     };
   }
 }
