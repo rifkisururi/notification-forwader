@@ -1,0 +1,11 @@
+name = "notif-landing-page"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+routes = [
+  { pattern = "notifgateway.pedagangpulsa.com", custom_domain = true }
+]
+
+[vars]
+ENVIRONMENT = "production"
+GITHUB_REPO_URL = "https://github.com/rifkisururi/notification-forwader"

@@ -59,7 +59,7 @@ NotifForwarder membantu merchant memantau notifikasi pembayaran dari berbagai ap
 
 ```
 notif/
-├── FE/                              # Flutter Android App
+├── FE-MobileApp/                    # Flutter Android App
 │   ├── lib/
 │   │   ├── main.dart                # Entry point & theme
 │   │   ├── screens/
@@ -74,6 +74,15 @@ notif/
 │   │       └── preferences.dart          # SharedPreferences wrapper
 │   ├── android/app/src/main/kotlin/    # Kotlin: NotificationListenerService
 │   └── pubspec.yaml
+│
+├── FE-LandingPage/                  # Landing Page Web (Cloudflare Worker)
+│   ├── src/
+│   │   ├── index.ts                 # Entry point & router
+│   │   ├── html.ts                  # HTML template
+│   │   ├── css.ts                   # CSS styling
+│   │   └── js.ts                    # Interactivity script
+│   ├── wrangler.toml
+│   └── package.json
 │
 ├── BE-notification-worker/           # Cloudflare Worker Backend
 │   ├── src/
@@ -128,7 +137,7 @@ npm run deploy
 ### Frontend (Flutter Android App)
 
 ```bash
-cd FE
+cd FE-MobileApp
 
 # Install dependencies
 flutter pub get
@@ -136,6 +145,22 @@ flutter pub get
 # Run di device/emulator
 flutter run
 ```
+
+### Landing Page (Cloudflare Worker)
+
+```bash
+cd FE-LandingPage
+
+# Install dependencies
+npm install
+
+# Jalankan lokal
+npm run dev
+
+# Deploy ke Cloudflare
+npm run deploy
+```
+
 
 **Setup di Android:**
 1. Buka **Settings → Apps → Special access → Notification access**

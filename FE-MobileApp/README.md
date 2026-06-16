@@ -89,15 +89,46 @@ Android memiliki manajemen baterai yang agresif (*Doze mode*) yang dapat menonak
 
 ## 📂 Struktur File Utama
 
-*   **[lib/main.dart](file:///D:/Code/saas/notif/FE-MobileApp/lib/main.dart)**: Titik masuk utama aplikasi & konfigurasi tema Material 3 Dark.
-*   **[lib/screens/home_screen.dart](file:///D:/Code/saas/notif/FE-MobileApp/lib/screens/home_screen.dart)**: Log notifikasi, status pengiriman, banner perizinan, dan drawer pengaturan global.
-*   **[lib/screens/forward_targets_screen.dart](file:///D:/Code/saas/notif/FE-MobileApp/lib/screens/forward_targets_screen.dart)**: Halaman daftar saluran forwarding target.
-*   **[lib/screens/edit_target_screen.dart](file:///D:/Code/saas/notif/FE-MobileApp/lib/screens/edit_target_screen.dart)**: Halaman untuk menambah/mengedit konfigurasi saluran target (API, Telegram, WhatsApp) dan tombol Test Connection.
-*   **[lib/screens/app_selector_screen.dart](file:///D:/Code/saas/notif/FE-MobileApp/lib/screens/app_selector_screen.dart)**: Halaman pemilih aplikasi terinstal dengan fitur pencarian.
-*   **[lib/services/notification_service.dart](file:///D:/Code/saas/notif/FE-MobileApp/lib/services/notification_service.dart)**: Jembatan `MethodChannel` native, deduplikasi, dan logika retry dengan log detail.
-*   **[lib/services/api_service.dart](file:///D:/Code/saas/notif/FE-MobileApp/lib/services/api_service.dart)**: Service HTTP klien untuk test koneksi dan forwarding payload ke berbagai target.
-*   **[lib/models/notification_payload.dart](file:///D:/Code/saas/notif/FE-MobileApp/lib/models/notification_payload.dart)**: Skema log lokal, model JSON, serta regex mengekstrak nominal.
-*   **[lib/models/forward_target.dart](file:///D:/Code/saas/notif/FE-MobileApp/lib/models/forward_target.dart)**: Skema model target forwarding (API, Telegram, WhatsApp).
-*   **[lib/utils/preferences.dart](file:///D:/Code/saas/notif/FE-MobileApp/lib/utils/preferences.dart)**: Helper penyimpanan persistent dengan `shared_preferences`.
-*   **[android/app/src/main/kotlin/com/example/notif/NotifListenerService.kt](file:///D:/Code/saas/notif/FE-MobileApp/android/app/src/main/kotlin/com/example/notif/NotifListenerService.kt)**: Service latar belakang native Android yang menyaring package & merelai event notifikasi.
-*   **[android/app/src/main/kotlin/com/example/notif/MainActivity.kt](file:///D:/Code/saas/notif/FE-MobileApp/android/app/src/main/kotlin/com/example/notif/MainActivity.kt)**: Mengatur method channel native dan mendaftarkan engine Flutter ke cache.
+*   **[lib/main.dart](lib/main.dart)**: Titik masuk utama aplikasi & konfigurasi tema Material 3 Dark.
+*   **[lib/screens/home_screen.dart](lib/screens/home_screen.dart)**: Log notifikasi, status pengiriman, banner perizinan, dan drawer pengaturan global.
+*   **[lib/screens/forward_targets_screen.dart](lib/screens/forward_targets_screen.dart)**: Halaman daftar saluran forwarding target.
+*   **[lib/screens/edit_target_screen.dart](lib/screens/edit_target_screen.dart)**: Halaman untuk menambah/mengedit konfigurasi saluran target (API, Telegram, WhatsApp) dan tombol Test Connection.
+*   **[lib/screens/app_selector_screen.dart](lib/screens/app_selector_screen.dart)**: Halaman pemilih aplikasi terinstal dengan fitur pencarian.
+*   **[lib/services/notification_service.dart](lib/services/notification_service.dart)**: Jembatan `MethodChannel` native, deduplikasi, dan logika retry dengan log detail.
+*   **[lib/services/api_service.dart](lib/services/api_service.dart)**: Service HTTP klien untuk test koneksi dan forwarding payload ke berbagai target.
+*   **[lib/models/notification_payload.dart](lib/models/notification_payload.dart)**: Skema log lokal, model JSON, serta regex mengekstrak nominal.
+*   **[lib/models/forward_target.dart](lib/models/forward_target.dart)**: Skema model target forwarding (API, Telegram, WhatsApp).
+*   **[lib/utils/preferences.dart](lib/utils/preferences.dart)**: Helper penyimpanan persistent dengan `shared_preferences`.
+*   **[android/app/src/main/kotlin/com/example/notif/NotifListenerService.kt](android/app/src/main/kotlin/com/example/notif/NotifListenerService.kt)**: Service latar belakang native Android yang menyaring package & merelai event notifikasi.
+*   **[android/app/src/main/kotlin/com/example/notif/MainActivity.kt](android/app/src/main/kotlin/com/example/notif/MainActivity.kt)**: Mengatur method channel native dan mendaftarkan engine Flutter ke cache.
+
+---
+
+## 🛠️ Pengembangan & Build Rilis
+
+### 1. Build Lokal
+Untuk menjalankan atau membangun aplikasi secara lokal, pastikan Anda telah menginstal Flutter SDK dan ikuti perintah di bawah ini:
+```bash
+# Mengunduh dependensi
+flutter pub get
+
+# Menjalankan aplikasi dalam mode debug
+flutter run
+
+# Membangun berkas APK rilis
+flutter build apk --release
+```
+
+### 2. Konfigurasi Penandatanganan Aplikasi (App Signing)
+Sebelum merilis APK ke produksi, buat file `android/key.properties` berdasarkan contoh di `android/key.properties.example` dan tentukan keystore Anda di sana.
+Untuk mengotomatiskan penyiapan ini dalam CI/CD:
+1. Jalankan skrip pembantu PowerShell di `android/encode_keystore.ps1` untuk mengonversi berkas keystore Anda (`upload-keystore.jks`) menjadi format Base64.
+2. Salin string Base64 yang dihasilkan dari berkas `upload-keystore.jks.base64`.
+3. Simpan di GitHub Secrets repositori Anda dengan nama `ANDROID_KEYSTORE_BASE64`.
+4. Simpan isi konten konfigurasi kunci Anda di GitHub Secrets dengan nama `KEY_PROPERTIES`.
+
+### 3. Alur Kerja CI/CD (GitHub Actions)
+Repositori ini dilengkapi dengan alur kerja GitHub Actions otomatis (`.github/workflows/release.yml`) untuk membangun rilis APK secara otomatis:
+* **Pemicu (Trigger)**: Dorong/push tag Git baru yang diawali dengan huruf `v` (misalnya: `v1.0.0`, `v0.0.2-beta`).
+* **Hasil Akhir**: Sistem akan secara otomatis mengompilasi aplikasi ke dalam APK produksi bertanda tangan (`app-release.apk`) dan mengunggahnya langsung sebagai aset rilis baru di GitHub Release.
+
